@@ -89,67 +89,70 @@ abline(scaled_model, col = "green") ## strange line!!!Check
 
 
 
-
-
-
-
-
-
-# Print regression output. V2 to predict V1 (year).
+## Print regression output. V2 to predict V1 (year).
 par(mfrow=c(2,2))
 plot(model1)
 ## reset
 par(mfrow=c(1,1))
 
 
+
+
 ####################
 ## Gradient Descent
 # http://www.r-bloggers.com/linear-regression-by-gradient-descent/
 
-
 ## Load x and y
 x <- training$V2
 y <- training$V1
-
+m <- length(y)
 ## x <- runif(1000, -5, 5)
 ## y <- x + rnorm(1000) + 3
 
 
 # squared error cost function
 cost <- function(X, y, theta) {
-        sum( (X %*% theta - y)^2 ) / (2*length(y))
+        sum( (X %*% theta - y)^2 ) / 2 %*% m
 }
 
 # learning rate and iteration limit
-alpha <- 0.001
+alpha <- 0.01
 num_iters <- 1000
 # keep history
 cost_history <- double(num_iters)
 theta_history <- list(num_iters)
 
 # initialize coefficients
-theta <- matrix(c(0,0), nrow=2)
+theta <- matrix(c(1900,0), nrow=2)
 
 # add a column of 1's for the intercept coefficient
 X <- cbind(1, matrix(x))
 
 # gradient descent
-pb <- txtProgressBar ## progress bar
+pb <- txtProgressBar(min = 0, max = num_iters, style = 3) ## progress bar
 for (i in 1:num_iters) {
         error <- (X %*% theta - y)
         delta <- t(X) %*% error / length(y)
         theta <- theta - alpha * delta
         cost_history[i] <- cost(X, y, theta)
         theta_history[[i]] <- theta
+        
         setTxtProgressBar(pb, i)
-}
+        }
 
+close(pb) ## close progress bar
 print(theta)
 
-
 ## Plot the cost history
-plot(cost_history, type='line', col='blue', lwd=2, main='Cost function', ylab='cost', xlab='Iterations')
+plot(cost_history, type='points', col='blue', lwd=2, main='Cost function', ylab='cost', xlab='Iterations', ylim = c(0,1000))
 
+
+## Let's see GD for scaled V2
+x <- (training$V2 - mean(training$V2))/sd(training$V2)
+
+
+## Analytical result?
+solve(t(x)%*%x)%*%t(x)%*%y 
 
 
 ####
